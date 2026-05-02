@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prioritix - Student Productivity & Well-Being Planner</title>
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body class="light-mode">
+    <div id="auth-container" class="auth-container">
+        <div class="auth-box">
+            <h1 class="auth-logo">Prioritix</h1>
+            <p class="auth-subtitle">Your Personal Productivity Companion</p>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="showAuthTab('login')">Login</button>
+                <button class="auth-tab" onclick="showAuthTab('signup')">Sign Up</button>
+            </div>
+            
+            <form id="login-form" class="auth-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="auth-btn">Login</button>
+                <p class="auth-message"></p>
+            </form>
+            
+            <form id="signup-form" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" required placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required placeholder="Create a password">
+                </div>
+                <div class="form-group">
+                    <label for="signup-confirm-password">Confirm Password</label>
+                    <input type="password" id="signup-confirm-password" required placeholder="Confirm your password">
+                </div>
+                <button type="submit" class="auth-btn">Sign Up</button>
+                <p class="auth-message"></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="main-app" style="display: none;">
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo" onclick="navigateTo('dashboard')">Prioritix</h1>
+            </div>
+            <nav class="header-nav">
+                <button class="nav-btn" onclick="toggleSidebar()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <button class="nav-btn theme-toggle" onclick="toggleTheme()">
+                    <svg class="sun-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="moon-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+                <button class="nav-btn user-menu" onclick="showUserMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </button>
+            </nav>
+        </header>
+
+        <aside class="sidebar" id="sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-link active" data-section="dashboard" onclick="navigateTo('dashboard')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-link" data-section="tasks" onclick="navigateTo('tasks')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    Task Manager
+                </a>
+                <a href="#" class="nav-link" data-section="focus" onclick="navigateTo('focus')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    Focus Mode
+                </a>
+                <a href="#" class="nav-link" data-section="calendar" onclick="navigateTo('calendar')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    Academic Calendar
+                </a>
+                <a href="#" class="nav-link" data-section="learning" onclick="navigateTo('learning')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    Learning & Revision
+                </a>
+                <a href="#" class="nav-link" data-section="analytics" onclick="navigateTo('analytics')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Analytics
+                </a>
+                <a href="#" class="nav-link" data-section="mental-health" onclick="navigateTo('mental-health')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    Mental Well-Being
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="tour-btn" onclick="startTour()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                    Start Tour
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section id="dashboard-section" class="content-section">
+                <h2>Welcome Back!</h2>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Today's Tasks</h3>
+                        <div class="stat-number" id="today-tasks-count">0</div>
+                        <p>Tasks for today</p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Study Hours</h3>
+                        <div class="stat-number" id="study-hours-count">0</div>
+                        <p>Hours this week</p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Productivity</h3>
+                        <div class="stat-number" id="productivity-score">0%</div>
+                        <p>Task completion rate</p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Current Mood</h3>
+                        <div class="mood-display" id="current-mood-display">😊</div>
+                        <p>How you're feeling</p>
+                    </div>
+                </div>
+                
+                <div class="quick-actions">
+                    <h3>Quick Actions</h3>
+                    <button class="quick-action-btn" onclick="navigateTo('tasks')">Add New Task</button>
+                    <button class="quick-action-btn" onclick="navigateTo('focus')">Start Focus Session</button>
+                    <button class="quick-action-btn" onclick="navigateTo('learning')">Review Flashcards</button>
+                    <button class="quick-action-btn" onclick="navigateTo('mental-health')">Log Mood</button>
+                </div>
+            </section>
+            <section id="tasks-section" class="content-section" style="display: none;">
+                <h2>Task Manager - Eisenhower Matrix</h2>
+                <div class="task-controls">
+                    <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="searchTasks()">
+                    <select id="task-sort" onchange="sortTasks()">
+    <option value="date">Sort by Date</option>
+    <option value="subject">Sort by Subject</option>
+</select>
+                    <button class="btn btn-primary" onclick="openTaskModal()">+ Add Task</button>
+                </div>
+                
+                <div class="eisenhower-matrix">
+                    <div class="matrix-quadrant urgent-important" id="quadrant-urgent-important">
+                        <h3>Urgent & Important</h3>
+                        <div class="task-list" id="urgent-important-tasks"></div>
+                    </div>
+                    <div class="matrix-quadrant important-not-urgent" id="quadrant-important-not-urgent">
+                        <h3>Important & Not Urgent</h3>
+                        <div class="task-list" id="important-not-urgent-tasks"></div>
+                    </div>
+                    <div class="matrix-quadrant urgent-not-important" id="quadrant-urgent-not-important">
+                        <h3>Urgent & Not Important</h3>
+                        <div class="task-list" id="urgent-not-important-tasks"></div>
+                    </div>
+                    <div class="matrix-quadrant not-urgent-not-important" id="quadrant-not-urgent-not-important">
+                        <h3>Not Urgent & Not Important</h3>
+                        <div class="task-list" id="not-urgent-not-important-tasks"></div>
+                    </div>
+                </div>
+            </section>
+            <section id="focus-section" class="content-section" style="display: none;">
+                <h2>Focus Mode</h2>
+                <div class="focus-container">
+                    <div class="timer-display">
+                        <div class="timer-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="#ddd" stroke-width="8"></circle>
+                                <circle id="timer-progress" cx="50" cy="50" r="45" fill="none" stroke="#4CAF50" stroke-width="8" 
+                                        stroke-dasharray="283" stroke-dashoffset="0" transform="rotate(-90 50 50)"></circle>
+                            </svg>
+                            <div class="timer-time" id="timer-time">25:00</div>
+                        </div>
+                        <div class="timer-label">Pomodoro Timer</div>
+                    </div>
+                    
+                    <div class="timer-controls">
+                        <button class="timer-btn" onclick="startTimer()">Start</button>
+                        <button class="timer-btn" onclick="pauseTimer()">Pause</button>
+                        <button class="timer-btn" onclick="resetTimer()">Reset</button>
+                    </div>
+                    
+                    <div class="timer-settings">
+                        <button class="setting-btn" onclick="setTimerMode('pomodoro')">Pomodoro (25min)</button>
+                        <button class="setting-btn" onclick="setTimerMode('short')">Short Break (5min)</button>
+                        <button class="setting-btn" onclick="setTimerMode('long')">Long Break (15min)</button>
+                    </div>
+                    
+                    <div class="focus-tips-section">
+                        <h3>Focus Tips</h3>
+                        <div class="tip-card" id="focus-tip">
+                            <p>Start with your most challenging task when your energy is highest.</p>
+                            <button class="tip-btn" onclick="getNewFocusTip()">New Tip</button>
+                        </div>
+                    </div>
+                    
+                    <div class="health-tips-section">
+                        <h3>Health Tips</h3>
+                        <div class="tip-card" id="health-tip">
+                            <p>Take regular breaks to stretch and rest your eyes.</p>
+                            <button class="tip-btn" onclick="getNewHealthTip()">New Tip</button>
+                        </div>
+                    </div>
+                    
+                    <button class="focus-mode-toggle" onclick="toggleFocusMode()">Enable Focus Mode</button>
+                </div>
+            </section>
+            <section id="calendar-section" class="content-section" style="display: none;">
+                <h2>Academic Calendar</h2>
+                <div class="calendar-controls">
+                    <button class="calendar-nav-btn" onclick="navigateMonth(-1)">&lt;</button>
+                    <h3 id="calendar-month-year">January 2024</h3>
+                    <button class="calendar-nav-btn" onclick="navigateMonth(1)">&gt;</button>
+                    <button class="btn btn-primary" onclick="openEventModal()">+ Add Event</button>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="calendar-header">Sun</div>
+                    <div class="calendar-header">Mon</div>
+                    <div class="calendar-header">Tue</div>
+                    <div class="calendar-header">Wed</div>
+                    <div class="calendar-header">Thu</div>
+                    <div class="calendar-header">Fri</div>
+                    <div class="calendar-header">Sat</div>
+                </div>
+                <div class="calendar-days" id="calendar-days"></div>
+                
+                <div class="upcoming-events">
+                    <h3>Upcoming Events</h3>
+                    <div id="upcoming-events-list"></div>
+                </div>
+            </section>
+            <section id="learning-section" class="content-section" style="display: none;">
+                <h2>Learning & Revision</h2>
+                <div class="learning-tabs">
+                    <button class="learning-tab active" onclick="showLearningTab('notes')">Notes</button>
+                    <button class="learning-tab" onclick="showLearningTab('flashcards')">Flashcards</button>
+                    <button class="learning-tab" onclick="showLearningTab('formulas')">Formulas</button>
+                </div>
+                <div id="notes-subsection" class="learning-subsection">
+                    <div class="notes-controls">
+                        <select id="notes-subject-filter" onchange="filterNotes()">
+                            <option value="all">All Subjects</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="openNoteModal()">+ Add Note</button>
+                        <button class="btn btn-secondary" onclick="openSubjectModal('notes')">+ Add Subject</button>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="toggle-notes-visibility" onchange="toggleNotesVisibility()">
+                            <span>Show Hidden</span>
+                        </label>
+                    </div>
+                    <div class="notes-grid" id="notes-grid"></div>
+                </div>
+                <div id="flashcards-subsection" class="learning-subsection" style="display: none;">
+                    <div class="flashcards-controls">
+                        <select id="flashcards-subject-filter" onchange="filterFlashcards()">
+                            <option value="all">All Subjects</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="openFlashcardModal()">+ Add Flashcard</button>
+                        <button class="btn btn-secondary" onclick="openSubjectModal('flashcards')">+ Add Subject</button>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="toggle-flashcards-visibility" onchange="toggleFlashcardsVisibility()">
+                            <span>Show Hidden</span>
+                        </label>
+                    </div>
+                    <div class="flashcards-container" id="flashcards-container"></div>
+                </div>
+                <div id="formulas-subsection" class="learning-subsection" style="display: none;">
+                    <div class="formulas-controls">
+                        <select id="formulas-subject-filter" onchange="filterFormulas()">
+                            <option value="all">All Subjects</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="openFormulaModal()">+ Add Formula</button>
+                        <button class="btn btn-secondary" onclick="openSubjectModal('formulas')">+ Add Subject</button>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="toggle-formulas-visibility" onchange="toggleFormulasVisibility()">
+                            <span>Show Hidden</span>
+                        </label>
+                    </div>
+                    <div class="formulas-grid" id="formulas-grid"></div>
+                </div>
+            </section>
+            <section id="analytics-section" class="content-section" style="display: none;">
+                <h2>Analytics</h2>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Activity Over Time</h3>
+                        <canvas id="activity-chart"></canvas>
+                        
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Task Completion by Subject</h3>
+                        <canvas id="subject-chart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Study Hours Distribution</h3>
+                        <canvas id="hours-chart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Mood History</h3>
+                        <div class="mood-history" id="mood-history"></div>
+                    </div>
+                </div>
+                
+                <div class="stats-summary">
+                    <h3>Statistics Summary</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Tasks Completed</span>
+                            <span class="stat-value" id="total-tasks-completed">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Study Hours</span>
+                            <span class="stat-value" id="total-study-hours">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pomodoro Sessions</span>
+                            <span class="stat-value" id="total-pomodoro-sessions">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Flashcards Reviewed</span>
+                            <span class="stat-value" id="total-flashcards-reviewed">0</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="mental-health-section" class="content-section" style="display: none;">
+                <h2>Mental Well-Being</h2>
+                <div class="mental-health-grid">
+                    <div class="mental-health-card mood-tracker">
+                        <h3>Mood Tracker</h3>
+                        <div class="mood-selector">
+                            <button class="mood-btn" data-mood="😢" onclick="logMood('😢')">😢</button>
+                            <button class="mood-btn" data-mood="😔" onclick="logMood('😔')">😔</button>
+                            <button class="mood-btn" data-mood="😐" onclick="logMood('😐')">😐</button>
+                            <button class="mood-btn" data-mood="😊" onclick="logMood('😊')">😊</button>
+                            <button class="mood-btn" data-mood="😄" onclick="logMood('😄')">😄</button>
+                        </div>
+                        <p class="mood-status" id="mood-status">Select your current mood</p>
+                    </div>
+                    
+                    <div class="mental-health-card reflection">
+    <h3>Daily Reflection</h3>
+    <textarea id="reflection-text" placeholder="Write your daily reflection here..." 
+              onchange="saveReflection()"></textarea>
+    <button class="btn btn-primary" onclick="saveReflection()">Save Reflection</button>
+    <div id="reflection-list"></div>
+</div>
+
+                    
+                    <div class="mental-health-card tips">
+                        <h3>Mental Health Tips</h3>
+                        <div class="tip-card" id="mental-health-tip">
+                            <p>Practice mindfulness meditation for 10 minutes daily to reduce stress.</p>
+                            <button class="tip-btn" onclick="getNewMentalHealthTip()">New Tip</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mental-health-card emergency">
+                        <h3>Emergency Contacts</h3>
+                        <div class="emergency-contacts" id="emergency-contacts">
+                            <div class="contact-item">
+                                <span class="contact-name">Crisis Hotline</span>
+                                <span class="contact-number">988</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="openEmergencyContactModal()">+ Add Contact</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <footer class="footer">
+            <p>&copy; 2024 Prioritix - Student Productivity & Well-Being Planner | Version 1.0</p>
+        </footer>
+    </div>
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('task-modal')">&times;</span>
+            <h2>Add New Task</h2>
+            <form id="task-form">
+                <div class="form-group">
+                    <label for="task-title">Task Title</label>
+                    <input type="text" id="task-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="task-description">Description</label>
+                    <textarea id="task-description" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+    <label for="task-subject">Subject</label>
+    <input type="text" id="task-subject" value="General">
+</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-urgent">Urgent?</label>
+                        <input type="checkbox" id="task-urgent">
+                    </div>
+                    <div class="form-group">
+                        <label for="task-important">Important?</label>
+                        <input type="checkbox" id="task-important">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="task-deadline">Deadline</label>
+                    <input type="datetime-local" id="task-deadline" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Task</button>
+            </form>
+        </div>
+    </div>
+    <div id="event-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('event-modal')">&times;</span>
+            <h2>Add Calendar Event</h2>
+            <form id="event-form">
+                <div class="form-group">
+                    <label for="event-title">Event Title</label>
+                    <input type="text" id="event-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-date">Date</label>
+                    <input type="date" id="event-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-time">Time</label>
+                    <input type="time" id="event-time" required>
+                </div>
+                <div class="form-group">
+                    <label for="event-type">Event Type</label>
+                    <select id="event-type">
+                        <option value="exam">Exam</option>
+                        <option value="assignment">Assignment</option>
+                        <option value="study">Study Session</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="event-notes">Notes</label>
+                    <textarea id="event-notes" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Event</button>
+            </form>
+        </div>
+    </div>
+    <div id="note-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('note-modal')">&times;</span>
+            <h2>Add Note</h2>
+            <form id="note-form">
+                <div class="form-group">
+                    <label for="note-title">Title</label>
+                    <input type="text" id="note-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="note-subject">Subject</label>
+                    <select id="note-subject">
+                        <option value="General">General</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="note-content">Content</label>
+                    <textarea id="note-content" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="note-links">Links (comma separated)</label>
+                    <input type="text" id="note-links" placeholder="https://example.com, https://example2.com">
+                </div>
+                <div class="form-group">
+                    <label for="note-image">Add Image</label>
+                    <div class="image-upload-options">
+                        <input type="url" id="note-image-url" placeholder="Or paste image URL">
+                        <div class="file-drop-zone" id="note-drop-zone">
+                            <p>Drag & drop image here or click to upload</p>
+                            <input type="file" id="note-image-file" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    <img id="note-image-preview" class="image-preview" style="display: none;">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Note</button>
+            </form>
+        </div>
+    </div>
+    <div id="flashcard-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('flashcard-modal')">&times;</span>
+            <h2>Add Flashcard</h2>
+            <form id="flashcard-form">
+                <div class="form-group">
+                    <label for="flashcard-question">Question</label>
+                    <input type="text" id="flashcard-question" required>
+                </div>
+                <div class="form-group">
+                    <label for="flashcard-answer">Answer</label>
+                    <input type="text" id="flashcard-answer" required>
+                </div>
+                <div class="form-group">
+                    <label for="flashcard-subject">Subject</label>
+                    <select id="flashcard-subject">
+                        <option value="General">General</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Flashcard</button>
+            </form>
+        </div>
+    </div>
+    <div id="formula-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('formula-modal')">&times;</span>
+            <h2>Add Formula</h2>
+            <form id="formula-form">
+                <div class="form-group">
+                    <label for="formula-name">Formula Name</label>
+                    <input type="text" id="formula-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="formula-expression">Formula Expression</label>
+                    <input type="text" id="formula-expression" required>
+                </div>
+                <div class="form-group">
+                    <label for="formula-subject">Subject</label>
+                    <select id="formula-subject">
+                        <option value="General">General</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Formula</button>
+            </form>
+        </div>
+    </div>
+    <div id="subject-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('subject-modal')">&times;</span>
+            <h2>Add Subject</h2>
+            <form id="subject-form">
+                <div class="form-group">
+                    <label for="subject-name">Subject Name</label>
+                    <input type="text" id="subject-name" required>
+                </div>
+                <input type="hidden" id="subject-type" value="notes">
+                <button type="submit" class="btn btn-primary">Add Subject</button>
+            </form>
+        </div>
+    </div>
+    <div id="emergency-contact-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('emergency-contact-modal')">&times;</span>
+            <h2>Add Emergency Contact</h2>
+            <form id="emergency-contact-form">
+                <div class="form-group">
+                    <label for="contact-name">Contact Name</label>
+                    <input type="text" id="contact-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-number">Contact Number</label>
+                    <input type="text" id="contact-number" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Contact</button>
+            </form>
+        </div>
+    </div>
+    <div id="calendar-events-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('calendar-events-modal')">&times;</span>
+            <h2 id="calendar-events-date">Events for Date</h2>
+            <div id="calendar-events-list" class="calendar-events-list"></div>
+        </div>
+    </div>
+    <div id="tour-overlay" class="tour-overlay" style="display: none;">
+        <div class="tour-highlight"></div>
+        <div class="tour-tooltip">
+            <h3 id="tour-title">Tour Title</h3>
+            <p id="tour-description">Tour description goes here.</p>
+            <div class="tour-controls">
+                <button class="tour-control-btn" onclick="restartTour()">Restart</button>
+                <button class="tour-control-btn" onclick="skipTour()">Skip</button>
+                <button class="tour-control-btn prev-btn" onclick="prevTourStep()">Previous</button>
+                <button class="tour-control-btn next-btn" onclick="nextTourStep()">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+    

@@ -1612,3 +1612,20 @@ body.focus-mode-active .main-content {
         font-size: 1.8rem;
     }
 }
+
+/* ===== Bootstrap Footer ===== */
+.footer {
+    font-size: 0.9rem;
+    z-index: 1030;
+}
+
+/* Optional: make footer stick to bottom */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#main-app {
+    flex: 1;
+}

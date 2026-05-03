@@ -1,6 +1,6 @@
 // Initialize Supabase
-const SUPABASE_URL = 'https://xyzxyzxyz.supabase.co';  // paste your URL
-const SUPABASE_KEY = 'eyJhbGc...';                      // paste your anon key
+const SUPABASE_URL = 'https://jakfuclvwydjuruiryhn.supabase.co';  // paste your URL
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impha2Z1Y2x2d3lkanVydWlyeWhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NTQ0ODQsImV4cCI6MjA5MzMzMDQ4NH0.VpaPBZs2hvfeI2ImG_R8QWvRjTRtWNpebDF4oCyWiC4';                      // paste your anon key
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);

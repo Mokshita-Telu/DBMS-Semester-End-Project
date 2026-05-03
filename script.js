@@ -289,13 +289,13 @@ async function showUserMenu() {
     }
 }
 
-function renderAllSections() {
-    renderDashboard();
-    renderTasks();
+async function renderAllSections() {
+    await loadTasks();
+    await loadFlashcards();
+    await loadMoodHistory();
     renderCalendar();
-    renderNotes();
-    renderFlashcards();
-    renderFormulas();
+    renderNotes();       // notes still uses localStorage for now
+    renderFormulas();    // formulas still uses localStorage for now
     renderAnalytics();
     renderMentalHealth();
     updateSubjectDropdowns();
@@ -324,6 +324,20 @@ function renderDashboard() {
     document.getElementById('current-mood-display').textContent = currentMood;
 }
 
+
+async function loadTasks() {
+    const { data, error } = await db
+        .from('tasks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) { console.log(error); return; }
+
+    appState.tasks = data;
+    renderTasks();
+    renderDashboard();
+    renderAnalytics();
+}
 function renderTasks() {
     const quadrants = {
         'urgent-important': [],
@@ -470,58 +484,45 @@ function editTask(taskId) {
     document.getElementById('task-modal').style.display = 'block';
 }
 
-function deleteTask(taskId) {
+async function deleteTask(taskId) {
     if (confirm('Are you sure you want to delete this task?')) {
-        appState.tasks = appState.tasks.filter(t => t.id !== taskId);
-        saveAppState();
-        renderTasks();
-        renderDashboard();
-        renderAnalytics();
+        await db.from('tasks').delete().eq('id', taskId);
+        await loadTasks();
     }
 }
 
-function toggleTaskComplete(taskId) {
+async function toggleTaskComplete(taskId) {
     const task = appState.tasks.find(t => t.id === taskId);
     if (task) {
-        task.completed = !task.completed;
-        if (task.completed) {
-            appState.analytics.tasksCompleted++;
-        }
-        saveAppState();
-        renderTasks();
-        renderDashboard();
-        renderAnalytics();
+        await db.from('tasks').update({ completed: !task.completed }).eq('id', taskId);
+        await loadTasks();
     }
 }
 
-document.getElementById('task-form').addEventListener('submit', function(e) {
+
+
+document.getElementById('task-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const editingId = this.dataset.editingId;
     const taskData = {
-        id: editingId || Date.now().toString(),
         title: document.getElementById('task-title').value,
         description: document.getElementById('task-description').value,
         subject: document.getElementById('task-subject').value,
         urgent: document.getElementById('task-urgent').checked,
         important: document.getElementById('task-important').checked,
-        deadline: document.getElementById('task-deadline').value,
-        completed: editingId ? appState.tasks.find(t => t.id === editingId)?.completed || false : false
+        deadline: document.getElementById('task-deadline').value
     };
-    
+
     if (editingId) {
-        const index = appState.tasks.findIndex(t => t.id === editingId);
-        appState.tasks[index] = taskData;
+        await db.from('tasks').update(taskData).eq('id', editingId);
         delete this.dataset.editingId;
     } else {
-        appState.tasks.push(taskData);
+        await db.from('tasks').insert(taskData);
     }
-    
-    saveAppState();
+
     closeModal('task-modal');
-    renderTasks();
-    renderDashboard();
-    renderAnalytics();
+    await loadTasks();
 });
 
 function searchTasks() {
@@ -898,6 +899,27 @@ function toggleNotesVisibility() {
     renderNotes();
 }
 
+// ← paste loadFlashcards here
+async function loadFlashcards() {
+    const { data, error } = await db
+        .from('flashcards')
+        .select('*');
+
+    if (error) { console.log(error); return; }
+
+    appState.flashcards = data.map(card => ({
+        ...card,
+        hidden: false
+    }));
+
+    renderFlashcards();
+}
+
+// ← the existing function stays exactly as it was below
+function renderFlashcards() {
+    const container = document.getElementById('flashcards-container');
+    ...
+
 function renderFlashcards() {
     const container = document.getElementById('flashcards-container');
     const subjectFilter = document.getElementById('flashcards-subject-filter').value;
@@ -978,13 +1000,13 @@ function openFlashcardModal() {
     document.getElementById('flashcard-form').reset();
 }
 
-function deleteFlashcard(cardId) {
+async function deleteFlashcard(cardId) {
     if (confirm('Are you sure you want to delete this flashcard?')) {
-        appState.flashcards = appState.flashcards.filter(f => f.id !== cardId);
-        saveAppState();
-        renderFlashcards();
+        await db.from('flashcards').delete().eq('id', cardId);
+        await loadFlashcards();
     }
 }
+
 
 function toggleFlashcardVisibility(cardId) {
     const card = appState.flashcards.find(f => f.id === cardId);
@@ -995,21 +1017,19 @@ function toggleFlashcardVisibility(cardId) {
     }
 }
 
-document.getElementById('flashcard-form').addEventListener('submit', function(e) {
+document.getElementById('flashcard-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    const cardData = {
-        id: Date.now().toString(),
+
+    const { error } = await db.from('flashcards').insert({
         question: document.getElementById('flashcard-question').value,
         answer: document.getElementById('flashcard-answer').value,
-        subject: document.getElementById('flashcard-subject').value,
-        hidden: false
-    };
-    
-    appState.flashcards.push(cardData);
-    saveAppState();
+        subject: document.getElementById('flashcard-subject').value
+    });
+
+    if (error) { console.log(error); return; }
+
     closeModal('flashcard-modal');
-    renderFlashcards();
+    await loadFlashcards();
 });
 
 function filterFlashcards() {
@@ -1350,19 +1370,37 @@ function updateStatsSummary() {
     document.getElementById('total-flashcards-reviewed').textContent = appState.analytics.flashcardsReviewed;
 }
 
-function logMood(mood) {
-    const now = new Date();
-    appState.moodHistory.push({
-        mood: mood,
-        date: now.toLocaleDateString(),
-        time: now.toLocaleTimeString()
-    });
-    
+async function logMood(mood) {
+    const { error } = await db.from('mood_logs').insert({ mood: mood });
+
+    if (error) {
+        console.log('Error logging mood:', error);
+        return;
+    }
+
     document.getElementById('mood-status').textContent = `Mood logged: ${mood}`;
-    saveAppState();
+    await loadMoodHistory(); // reload from database
     renderDashboard();
-    renderMoodHistory();
     renderAnalytics();
+}
+
+async function loadMoodHistory() {
+    const { data, error } = await db
+        .from('mood_logs')
+        .select('*')
+        .order('logged_at', { ascending: false })
+        .limit(14);
+
+    if (error) { console.log(error); return; }
+
+    // convert to the format your existing renderMoodHistory() expects
+    appState.moodHistory = data.map(entry => ({
+        mood: entry.mood,
+        date: new Date(entry.logged_at).toLocaleDateString(),
+        time: new Date(entry.logged_at).toLocaleTimeString()
+    }));
+
+    renderMoodHistory();
 }
 
 function saveReflection() {

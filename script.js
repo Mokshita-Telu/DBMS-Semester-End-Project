@@ -323,9 +323,9 @@ function renderDashboard() {
     const productivity = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
     document.getElementById('productivity-score').textContent = productivity + '%';
     
-    const currentMood = appState.moodHistory.length > 0 ? 
-        appState.moodHistory[appState.moodHistory.length - 1].mood : '😊';
-    document.getElementById('current-mood-display').textContent = currentMood;
+   const currentMood = appState.moodHistory.length > 0 ? 
+    appState.moodHistory[0].mood : '😊';
+document.getElementById('current-mood-display').textContent = currentMood;
 }
 
 
@@ -844,16 +844,17 @@ async function loadNotes() {        // ← NEW function starts here
 
     if (error) { console.log(error); return; }
 
-    appState.notes = data.map(function(note) {
-        return {
-            id: note.id,
-            title: note.title,
-            subject: note.subject,
-            content: note.content,
-            links: [],
-            hidden: false
-        };
-    });
+   appState.notes = data.map(function(note) {
+    return {
+        id: note.id,
+        title: note.title,
+        subject: note.subject,
+        content: note.content,
+        image: note.image,
+        links: [],
+        hidden: false
+    };
+});
 
     renderNotes();
 }                                   // ← NEW function ends here
@@ -933,12 +934,13 @@ document.getElementById('note-form').addEventListener('submit', async function(e
     e.preventDefault();
 
     const editingId = this.dataset.editingId;
-    const noteData = {
-        title: document.getElementById('note-title').value,
-        subject: document.getElementById('note-subject').value,
-        content: document.getElementById('note-content').value
-    };
-
+  const imagePreview = document.getElementById('note-image-preview');
+const noteData = {
+    title: document.getElementById('note-title').value,
+    subject: document.getElementById('note-subject').value,
+    content: document.getElementById('note-content').value,
+    image: imagePreview.style.display !== 'none' ? imagePreview.src : null
+};
     if (editingId) {
         await db.from('notes').update(noteData).eq('id', editingId);
         delete this.dataset.editingId;

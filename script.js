@@ -153,9 +153,15 @@ function saveAppState() {
     localStorage.setItem('prioritixState', JSON.stringify(appState));
 }
 
-function initializeApp() {
+async function initializeApp() {
     setupEventListeners();
-    if (appState.user) {
+
+    // Check if user is already logged in via Supabase
+    const { data: { user } } = await db.auth.getUser();
+
+    if (user) {
+        appState.user = { email: user.email, id: user.id };
+        saveAppState();
         showMainApp();
         renderAllSections();
         if (appState.firstTimeUser) {
@@ -197,36 +203,45 @@ function showAuthTab(tab) {
     }
 }
 
-document.getElementById('login-form').addEventListener('submit', function(e) {
+document.getElementById('login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    
-    if (email && password) {
-        appState.user = { email: email };
+
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        showAuthMessage(error.message, 'login-form');
+    } else {
+        appState.user = { email: data.user.email, id: data.user.id };
         saveAppState();
         showMainApp();
         renderAllSections();
     }
 });
 
-document.getElementById('signup-form').addEventListener('submit', function(e) {
+document.getElementById('signup-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const name = document.getElementById('signup-name').value;
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
     const confirmPassword = document.getElementById('signup-confirm-password').value;
-    
+
     if (password !== confirmPassword) {
         showAuthMessage('Passwords do not match!', 'signup-form');
         return;
     }
-    
-    if (name && email && password) {
-        appState.user = { name: name, email: email };
-        saveAppState();
-        showMainApp();
-        renderAllSections();
+
+    const { data, error } = await db.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: name } }
+    });
+
+    if (error) {
+        showAuthMessage(error.message, 'signup-form');
+    } else {
+        showAuthMessage('Account created! Please check your email to confirm, then log in.', 'signup-form');
     }
 });
 
@@ -265,8 +280,9 @@ function toggleSidebar() {
     document.querySelector('.sidebar').classList.toggle('active');
 }
 
-function showUserMenu() {
+async function showUserMenu() {
     if (confirm('Do you want to logout?')) {
+        await db.auth.signOut();
         appState.user = null;
         saveAppState();
         location.reload();

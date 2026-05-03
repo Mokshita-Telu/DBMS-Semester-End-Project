@@ -297,8 +297,8 @@ async function renderAllSections() {
     await loadTasks();
     await loadFlashcards();
     await loadMoodHistory();
-    renderCalendar();
-    await loadNotes();      // notes still uses localStorage for now
+    await loadEvents();
+await loadNotes();      // notes still uses localStorage for now
     renderFormulas();    // formulas still uses localStorage for now
     renderAnalytics();
     renderMentalHealth();
@@ -631,6 +631,28 @@ function toggleFocusMode() {
     }
 }
 
+async function loadEvents() {
+    const { data, error } = await db
+        .from('events')
+        .select('*');
+
+    if (error) { console.log(error); return; }
+
+    appState.events = data.map(function(e) {
+        return {
+            id: e.id,
+            title: e.title,
+            date: e.event_date,
+            time: e.event_time,
+            type: e.event_type,
+            notes: e.notes
+        };
+    });
+
+    renderCalendar();
+}
+
+
 function renderCalendar() {
     const month = appState.currentCalendarMonth;
     const year = appState.currentCalendarYear;
@@ -747,39 +769,35 @@ function editEvent(eventId) {
     document.getElementById('event-modal').style.display = 'block';
 }
 
-function deleteEvent(eventId) {
+async function deleteEvent(eventId) {
     if (confirm('Are you sure you want to delete this event?')) {
-        appState.events = appState.events.filter(e => e.id !== eventId);
-        saveAppState();
+        await db.from('events').delete().eq('id', eventId);
+        await loadEvents();
         closeModal('calendar-events-modal');
-        renderCalendar();
     }
 }
 
-document.getElementById('event-form').addEventListener('submit', function(e) {
+document.getElementById('event-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const editingId = this.dataset.editingId;
     const eventData = {
-        id: editingId || Date.now().toString(),
         title: document.getElementById('event-title').value,
-        date: document.getElementById('event-date').value,
-        time: document.getElementById('event-time').value,
-        type: document.getElementById('event-type').value,
+        event_date: document.getElementById('event-date').value,
+        event_time: document.getElementById('event-time').value,
+        event_type: document.getElementById('event-type').value,
         notes: document.getElementById('event-notes').value
     };
-    
+
     if (editingId) {
-        const index = appState.events.findIndex(ev => ev.id === editingId);
-        appState.events[index] = eventData;
+        await db.from('events').update(eventData).eq('id', editingId);
         delete this.dataset.editingId;
     } else {
-        appState.events.push(eventData);
+        await db.from('events').insert(eventData);
     }
-    
-    saveAppState();
+
     closeModal('event-modal');
-    renderCalendar();
+    await loadEvents();
 });
 
 function renderUpcomingEvents() {
@@ -840,8 +858,7 @@ async function loadNotes() {        // ← NEW function starts here
     renderNotes();
 }                                   // ← NEW function ends here
 
-function renderNotes() {            // ← existing function stays below
-    const container = document.getElementById('notes-grid');
+
 function renderNotes() {
     const container = document.getElementById('notes-grid');
     const subjectFilter = document.getElementById('notes-subject-filter').value;
@@ -870,8 +887,9 @@ function renderNotes() {
             ` : ''}
             ${note.image ? `<img src="${note.image}" alt="Note image" class="note-image">` : ''}
             <div class="card-actions">
-                <button class="btn btn-secondary" onclick="toggleNoteVisibility('${note.id}')">${note.hidden ? 'Show' : 'Hide'}</button>
-                <button class="btn btn-danger" onclick="deleteNote('${note.id}')">Delete</button>
+                <button class="btn btn-secondary" onclick="editNote('${note.id}')">Edit</button>
+<button class="btn btn-secondary" onclick="toggleNoteVisibility('${note.id}')">${note.hidden ? 'Show' : 'Hide'}</button>
+<button class="btn btn-danger" onclick="deleteNote('${note.id}')">Delete</button>
             </div>
         `;
         container.appendChild(noteEl);
@@ -882,6 +900,17 @@ function openNoteModal() {
     document.getElementById('note-modal').style.display = 'block';
     document.getElementById('note-form').reset();
     document.getElementById('note-image-preview').style.display = 'none';
+    delete document.getElementById('note-form').dataset.editingId;
+}
+
+function editNote(noteId) {
+    const note = appState.notes.find(n => n.id === noteId);
+    if (!note) return;
+    document.getElementById('note-title').value = note.title;
+    document.getElementById('note-subject').value = note.subject;
+    document.getElementById('note-content').value = note.content;
+    document.getElementById('note-form').dataset.editingId = noteId;
+    document.getElementById('note-modal').style.display = 'block';
 }
 
 function toggleNoteVisibility(noteId) {
@@ -893,29 +922,33 @@ function toggleNoteVisibility(noteId) {
     }
 }
 
-function deleteNote(noteId) {
+async function deleteNote(noteId) {
     if (confirm('Are you sure you want to delete this note?')) {
-        appState.notes = appState.notes.filter(n => n.id !== noteId);
-        saveAppState();
-        renderNotes();
+        await db.from('notes').delete().eq('id', noteId);
+        await loadNotes();
     }
 }
 
 document.getElementById('note-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    const { error } = await db.from('notes').insert({
+    const editingId = this.dataset.editingId;
+    const noteData = {
         title: document.getElementById('note-title').value,
         subject: document.getElementById('note-subject').value,
         content: document.getElementById('note-content').value
-    });
+    };
 
-    if (error) { console.log(error); return; }
+    if (editingId) {
+        await db.from('notes').update(noteData).eq('id', editingId);
+        delete this.dataset.editingId;
+    } else {
+        await db.from('notes').insert(noteData);
+    }
 
     closeModal('note-modal');
     await loadNotes();
 });
-
 function filterNotes() {
     renderNotes();
 }
@@ -924,7 +957,7 @@ function toggleNotesVisibility() {
     renderNotes();
 }
 
-// ← paste loadFlashcards here
+
 async function loadFlashcards() {
     const { data, error } = await db
         .from('flashcards')
@@ -991,14 +1024,22 @@ function renderFlashcards() {
                     </div>
                 </div>
             `;
-            cardEl.addEventListener('click', function() {
-                this.classList.toggle('flipped');
-                if (this.classList.contains('flipped')) {
-                    appState.analytics.flashcardsReviewed++;
-                    saveAppState();
-                    renderAnalytics();
-                }
-            });
+           cardEl.addEventListener('click', function() {
+    this.classList.toggle('flipped');
+    if (this.classList.contains('flipped')) {
+        appState.analytics.flashcardsReviewed++;
+        saveAppState();
+        renderAnalytics();
+    }
+});
+
+const actionsDiv = document.createElement('div');
+actionsDiv.className = 'card-actions';
+actionsDiv.innerHTML = `
+    <button class="btn btn-secondary" onclick="editFlashcard('${card.id}')">Edit</button>
+    <button class="btn btn-danger" onclick="deleteFlashcard('${card.id}')">Delete</button>
+`;
+cardEl.appendChild(actionsDiv);
             container.appendChild(cardEl);
         });
     });
@@ -1021,8 +1062,18 @@ function scrollFlashcards(direction) {
 function openFlashcardModal() {
     document.getElementById('flashcard-modal').style.display = 'block';
     document.getElementById('flashcard-form').reset();
+    delete document.getElementById('flashcard-form').dataset.editingId;
 }
 
+function editFlashcard(cardId) {
+    const card = appState.flashcards.find(f => f.id === cardId);
+    if (!card) return;
+    document.getElementById('flashcard-question').value = card.question;
+    document.getElementById('flashcard-answer').value = card.answer;
+    document.getElementById('flashcard-subject').value = card.subject;
+    document.getElementById('flashcard-form').dataset.editingId = cardId;
+    document.getElementById('flashcard-modal').style.display = 'block';
+}
 async function deleteFlashcard(cardId) {
     if (confirm('Are you sure you want to delete this flashcard?')) {
         await db.from('flashcards').delete().eq('id', cardId);
@@ -1043,13 +1094,19 @@ function toggleFlashcardVisibility(cardId) {
 document.getElementById('flashcard-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    const { error } = await db.from('flashcards').insert({
+    const editingId = this.dataset.editingId;
+    const cardData = {
         question: document.getElementById('flashcard-question').value,
         answer: document.getElementById('flashcard-answer').value,
         subject: document.getElementById('flashcard-subject').value
-    });
+    };
 
-    if (error) { console.log(error); return; }
+    if (editingId) {
+        await db.from('flashcards').update(cardData).eq('id', editingId);
+        delete this.dataset.editingId;
+    } else {
+        await db.from('flashcards').insert(cardData);
+    }
 
     closeModal('flashcard-modal');
     await loadFlashcards();

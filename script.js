@@ -912,13 +912,14 @@ async function loadFlashcards() {
     if (error) { console.log(error); return; }
 
     appState.flashcards = data.map(card => ({
-    id: card.id,
-    question: card.question,
-    answer: card.answer,
-    subject: card.subject,
-    hidden: false
-}));
-renderFlashcards();
+        id: card.id,
+        question: card.question,
+        answer: card.answer,
+        subject: card.subject,
+        hidden: false
+    }));
+
+    renderFlashcards();
 }
 
 function renderFlashcards() {

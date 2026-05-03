@@ -934,12 +934,21 @@ document.getElementById('note-form').addEventListener('submit', async function(e
     e.preventDefault();
 
     const editingId = this.dataset.editingId;
-  const imagePreview = document.getElementById('note-image-preview');
+const imageUrl = document.getElementById('note-image-url').value;
+const imagePreview = document.getElementById('note-image-preview');
+let finalImage = null;
+
+if (imageUrl && imageUrl.trim() !== '') {
+    finalImage = imageUrl.trim();
+} else if (imagePreview.style.display !== 'none' && imagePreview.src && imagePreview.src.startsWith('https://')) {
+    finalImage = imagePreview.src;
+}
+
 const noteData = {
     title: document.getElementById('note-title').value,
     subject: document.getElementById('note-subject').value,
     content: document.getElementById('note-content').value,
-    image: imagePreview.style.display !== 'none' ? imagePreview.src : null
+    image: finalImage
 };
     if (editingId) {
         await db.from('notes').update(noteData).eq('id', editingId);
@@ -1482,7 +1491,8 @@ async function loadMoodHistory() {
         time: new Date(entry.logged_at).toLocaleTimeString()
     }));
 
-    renderMoodHistory();
+     renderMoodHistory();
+    renderDashboard();
 }
 
 function saveReflection() {
@@ -1689,14 +1699,26 @@ function setupEventListeners() {
     });
 }
 
-function handleImageUpload(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const preview = document.getElementById('note-image-preview');
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
+async function handleImageUpload(file) {
+    const fileName = Date.now() + '_' + file.name;
+    
+    const { data, error } = await db.storage
+        .from('note-images')
+        .upload(fileName, file);
+
+    if (error) {
+        console.log('Image upload error:', error);
+        alert('Image upload failed. Try using an image URL instead.');
+        return;
+    }
+
+    const { data: urlData } = db.storage
+        .from('note-images')
+        .getPublicUrl(fileName);
+
+    const preview = document.getElementById('note-image-preview');
+    preview.src = urlData.publicUrl;
+    preview.style.display = 'block';
 }
 
 document.addEventListener('keydown', function(e) {

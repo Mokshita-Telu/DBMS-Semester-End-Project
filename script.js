@@ -136,9 +136,9 @@ const mentalHealthTips = [
     "Engage in creative activities as a form of expression and relief."
 ];
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     loadAppState();
-    initializeApp();
+    await initializeApp();
 });
 
 function loadAppState() {
@@ -912,12 +912,12 @@ async function loadFlashcards() {
     if (error) { console.log(error); return; }
 
     appState.flashcards = data.map(card => ({
-        ...card,
-        hidden: false
-    }));
-
-    renderFlashcards();
-}
+    id: card.id,
+    question: card.question,
+    answer: card.answer,
+    subject: card.subject,
+    hidden: false
+}));
 
 
 function renderFlashcards() {
@@ -1464,21 +1464,7 @@ function deleteEmergencyContact(index) {
     }
 }
 
-function renderMentalHealth() {
-    const container = document.getElementById('emergency-contacts');
-    container.innerHTML = '';
-    
-    appState.emergencyContacts.forEach((contact, index) => {
-        const contactEl = document.createElement('div');
-        contactEl.className = 'contact-item';
-        contactEl.innerHTML = `
-            <span class="contact-name">${contact.name}</span>
-            <span class="contact-number">${contact.number}</span>
-            ${index > 0 ? `<button class="btn btn-danger" onclick="deleteEmergencyContact(${index})">Delete</button>` : ''}
-        `;
-        container.appendChild(contactEl);
-    });
-}
+
 
 function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';

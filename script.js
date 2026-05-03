@@ -298,7 +298,7 @@ async function renderAllSections() {
     await loadFlashcards();
     await loadMoodHistory();
     renderCalendar();
-    renderNotes();       // notes still uses localStorage for now
+    await loadNotes();      // notes still uses localStorage for now
     renderFormulas();    // formulas still uses localStorage for now
     renderAnalytics();
     renderMentalHealth();
@@ -817,6 +817,31 @@ function showLearningTab(tab) {
     document.getElementById(tab + '-subsection').style.display = 'block';
 }
 
+
+async function loadNotes() {        // ← NEW function starts here
+    const { data, error } = await db
+        .from('notes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) { console.log(error); return; }
+
+    appState.notes = data.map(function(note) {
+        return {
+            id: note.id,
+            title: note.title,
+            subject: note.subject,
+            content: note.content,
+            links: [],
+            hidden: false
+        };
+    });
+
+    renderNotes();
+}                                   // ← NEW function ends here
+
+function renderNotes() {            // ← existing function stays below
+    const container = document.getElementById('notes-grid');
 function renderNotes() {
     const container = document.getElementById('notes-grid');
     const subjectFilter = document.getElementById('notes-subject-filter').value;
@@ -876,23 +901,19 @@ function deleteNote(noteId) {
     }
 }
 
-document.getElementById('note-form').addEventListener('submit', function(e) {
+document.getElementById('note-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    const noteData = {
-        id: Date.now().toString(),
+
+    const { error } = await db.from('notes').insert({
         title: document.getElementById('note-title').value,
         subject: document.getElementById('note-subject').value,
-        content: document.getElementById('note-content').value,
-        links: document.getElementById('note-links').value.split(',').map(l => l.trim()).filter(l => l),
-        image: document.getElementById('note-image-url').value || document.getElementById('note-image-preview').src,
-        hidden: false
-    };
-    
-    appState.notes.push(noteData);
-    saveAppState();
+        content: document.getElementById('note-content').value
+    });
+
+    if (error) { console.log(error); return; }
+
     closeModal('note-modal');
-    renderNotes();
+    await loadNotes();
 });
 
 function filterNotes() {

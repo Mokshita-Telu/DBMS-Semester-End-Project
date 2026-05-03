@@ -919,10 +919,6 @@ async function loadFlashcards() {
     renderFlashcards();
 }
 
-// ← the existing function stays exactly as it was below
-function renderFlashcards() {
-    const container = document.getElementById('flashcards-container');
-    ...
 
 function renderFlashcards() {
     const container = document.getElementById('flashcards-container');

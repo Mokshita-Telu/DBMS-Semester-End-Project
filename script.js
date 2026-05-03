@@ -918,7 +918,8 @@ async function loadFlashcards() {
     subject: card.subject,
     hidden: false
 }));
-
+renderFlashcards();
+}
 
 function renderFlashcards() {
     const container = document.getElementById('flashcards-container');

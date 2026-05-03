@@ -1,3 +1,11 @@
+// Initialize Supabase
+const SUPABASE_URL = 'https://xyzxyzxyz.supabase.co';  // paste your URL
+const SUPABASE_KEY = 'eyJhbGc...';                      // paste your anon key
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
 let appState = {
     user: null,
     theme: 'light',

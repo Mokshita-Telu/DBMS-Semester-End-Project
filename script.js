@@ -195,12 +195,16 @@ function showAuthTab(tab) {
     document.querySelectorAll('.auth-form').forEach(f => f.style.display = 'none');
     
     if (tab === 'login') {
-        document.querySelector('.auth-tab:first-child').classList.add('active');
         document.getElementById('login-form').style.display = 'flex';
     } else {
-        document.querySelector('.auth-tab:last-child').classList.add('active');
         document.getElementById('signup-form').style.display = 'flex';
     }
+
+    document.querySelectorAll('.auth-tab').forEach(t => {
+        if (t.getAttribute('onclick').includes(tab)) {
+            t.classList.add('active');
+        }
+    });
 }
 
 document.getElementById('login-form').addEventListener('submit', async function(e) {
